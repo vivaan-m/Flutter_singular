@@ -7,8 +7,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,7 +21,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -39,13 +38,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-      initState() {
-              SingularConfig config = new SingularConfig('select_astro_6b529a6d', '63be08e3d7bd649ed48e1f46f83ad3aa');
-              config.customUserId = "test@test.com";
-              Singular.start(config);
-      }
-
-
+  initState() {
+    SingularConfig config = new SingularConfig(
+        'select_astro_6b529a6d', '63be08e3d7bd649ed48e1f46f83ad3aa');
+    config.customUserId = "test@test.com";
+    Singular.start(config);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +55,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-
             ElevatedButton(
               onPressed: () {
                 Singular.event("BlogListScreen_changeCategory");
