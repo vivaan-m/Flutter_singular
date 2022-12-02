@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:singular_flutter_sdk/singular.dart';
 import 'package:singular_flutter_sdk/singular_config.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // If you're going to use other Firebase services in the background, such as Firestore,
+  // make sure you call `initializeApp` before using other Firebase services.
+  await Firebase.initializeApp();
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,7 +32,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({required this.title});
 
   final String title;
 
@@ -32,9 +43,31 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  FirebaseMessaging messaging = FirebaseMessaging.instance;
+
   void _incrementCounter() {
     setState(() {
       _counter++;
+    });
+  }
+
+  requestSetting() async {
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+      }
     });
   }
 
@@ -42,7 +75,12 @@ class _MyHomePageState extends State<MyHomePage> {
     SingularConfig config = new SingularConfig(
         'select_astro_6b529a6d', '63be08e3d7bd649ed48e1f46f83ad3aa');
     config.customUserId = "test@test.com";
+
     Singular.start(config);
+
+    requestSetting();
+
+   
   }
 
   @override
@@ -56,8 +94,10 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Singular.event("BlogListScreen_changeCategory");
+                var a = await messaging.getToken();
+                print(a);
               },
               child: const Text("hit singular event"),
               style: ElevatedButton.styleFrom(
